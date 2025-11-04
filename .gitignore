@@ -64,3 +64,6 @@ coverage/
 *.temp
 .tmp/
 .temp/
+.last-run.json
+playwright-report/
+test-results/

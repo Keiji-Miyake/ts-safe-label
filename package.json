@@ -1,14 +1,36 @@
 {
-  "name": "boiler-plate",
+  "name": "expo-workers-monorepo",
   "version": "1.0.0",
-  "description": "",
+  "description": "⚡ Expo (React Native) + Cloudflare Workers (Hono) monorepo boilerplate with pnpm workspace",
   "main": "index.js",
   "scripts": {
+    "predev": "pnpm dlx kill-port 8787 || true",
     "dev": "pnpm --filter api dev & pnpm --filter client dev",
-    "dev:parallel": "pnpm --parallel --stream -r dev"
+    "dev:parallel": "pnpm --parallel --stream -r dev",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
-  "keywords": [],
+  "keywords": [
+    "expo",
+    "react-native",
+    "cloudflare-workers",
+    "hono",
+    "typescript",
+    "monorepo",
+    "pnpm-workspace",
+    "boilerplate",
+    "starter-template",
+    "fullstack"
+  ],
   "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.20.0"
+  "license": "MIT",
+  "packageManager": "pnpm@10.20.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/expo-workers-monorepo.git"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  }
 }

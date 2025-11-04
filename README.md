@@ -1,11 +1,18 @@
-# マルチプラットフォームアプリ開発ボイラープレート
+# expo-workers-monorepo
 
-Expo (React Native) クライアントと Cloudflare Workers (Hono) API を同一ワークスペースで開発できるモノレポ構成のボイラープレートです。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![pnpm](https://img.shields.io/badge/pnpm-10.20.0-orange)](https://pnpm.io/)
+[![Expo](https://img.shields.io/badge/Expo-~54.0-blue)](https://expo.dev/)
+[![Hono](https://img.shields.io/badge/Hono-^4.10-red)](https://hono.dev/)
+
+⚡ **Expo (React Native) + Cloudflare Workers (Hono) monorepo boilerplate with pnpm workspace**
+
+マルチプラットフォームアプリ（iOS / Android / Web）と Cloudflare Workers API を同一ワークスペースで開発できるボイラープレートです。
 
 ## 📁 構成
 
-```
-boiler-plate/
+```tree
+expo-workers-monorepo/
 ├── apps/
 │   ├── api/          # Cloudflare Workers + Hono (API サーバー)
 │   └── client/       # Expo (React Native) アプリ
@@ -20,6 +27,7 @@ pnpm install && pnpm dev
 ```
 
 このコマンドで以下が同時に起動します：
+
 - **API サーバー**: <http://localhost:8787> (Cloudflare Workers ローカル)
 - **Expo Metro Bundler**: <http://localhost:8081> (クライアント開発サーバー)
 
@@ -42,7 +50,7 @@ Expo アプリの起動後、ターミナルに対話メニューが表示され
 ```typescript
 // apps/client/App.tsx
 import { useEffect, useState } from 'react';
-import { api } from './lib/api';
+import { api } from './lib/apiClient';
 
 export default function App() {
   const [message, setMessage] = useState('');
@@ -61,7 +69,7 @@ export default function App() {
 }
 ```
 
-API ヘルパーは `apps/client/lib/api.ts` に定義されています。
+API ヘルパーは `apps/client/lib/apiClient.ts` に定義されています。
 
 ### API エンドポイント例
 
@@ -115,14 +123,26 @@ pnpm --filter client web
 ## 📦 技術スタック
 
 ### API
+
 - **Hono**: 高速な Web フレームワーク
 - **Cloudflare Workers**: エッジでの実行環境
 - **Vitest**: テストフレームワーク
 
 ### クライアント
+
 - **Expo**: React Native 開発プラットフォーム
 - **React Native**: クロスプラットフォーム UI
 - **TypeScript**: 型安全な開発
+
+### テスト
+
+- **Vitest**: API のユニットテスト
+- **Playwright**: Web 版の E2E テスト
+
+### CI/CD
+
+- **GitHub Actions**: 自動テスト・デプロイ
+- **Wrangler**: Cloudflare Workers デプロイツール
 
 ## 🔧 環境変数
 
@@ -130,7 +150,7 @@ pnpm --filter client web
 
 ```bash
 # .env (apps/client/.env)
-EXPO_PUBLIC_API_URL=https://your-api.workers.dev
+EXPO_PUBLIC_HONO_API_URL=https://your-api.workers.dev
 ```
 
 開発環境ではデフォルトで `http://localhost:8787` が使用されます。
@@ -139,39 +159,74 @@ EXPO_PUBLIC_API_URL=https://your-api.workers.dev
 
 1. `apps/client/App.tsx` を編集してクライアント UI を作成
 2. `apps/api/src/index.ts` に新しい API エンドポイントを追加
-3. `apps/client/lib/api.ts` に API ヘルパー関数を追加
-4. Cloudflare Workers にデプロイして本番環境で動作確認
+3. `apps/client/lib/apiClient.ts` に API ヘルパー関数を追加
+4. Cloudflare Workers にデプロイして本番環境で動作確認（[DEPLOY.md](./DEPLOY.md) 参照）
+
+## 🧪 テスト
+
+### API テスト
+
+```bash
+# API のユニットテスト（Vitest）
+pnpm --filter api test
+```
+
+### Client テスト
+
+```bash
+# Client のユニットテスト（Vitest + React Testing Library）
+pnpm --filter client test
+```
+
+### E2E テスト
+
+```bash
+# Playwright E2E テスト（Web 版）
+pnpm test:e2e
+
+# UI モードで実行
+pnpm test:e2e:ui
+
+# デバッグモード
+pnpm test:e2e:debug
+```
 
 ## ⚠️ トラブルシューティング
 
 ### Android SDK が見つからない
 
-```
+```sh
 Error: Failed to resolve the Android SDK path
 ```
 
 このエラーが出る場合は、以下のいずれかの方法で開発できます：
 
-**方法1: Web で開発する（推奨）**
+### 方法1: Web で開発する（推奨）
+
 ```bash
 # ターミナルで 'w' キーを押す、または
 pnpm --filter client web
 ```
-ブラウザで http://localhost:8081 が開きます。
 
-**方法2: Android Studio をインストールする**
+ブラウザで <http://localhost:8081> が開きます。
+
+### 方法2: Android Studio をインストールする**
+
 1. [Android Studio](https://developer.android.com/studio) をダウンロード・インストール
 2. Android SDK のパスを環境変数に設定:
-```bash
-# ~/.bashrc または ~/.zshrc に追加
-export ANDROID_HOME=$HOME/Android/Sdk
-export PATH=$PATH:$ANDROID_HOME/emulator
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-```
+
+   ```bash
+   # ~/.bashrc または ~/.zshrc に追加
+   export ANDROID_HOME=$HOME/Android/Sdk
+   export PATH=$PATH:$ANDROID_HOME/emulator
+   export PATH=$PATH:$ANDROID_HOME/platform-tools
+   ```
+
 3. エミュレータを作成して起動
 4. `pnpm dev` を実行して `a` キーを押す
 
-**方法3: 実機で開発する**
+### 方法3: 実機で開発する
+
 1. スマートフォンに [Expo Go](https://expo.dev/client) アプリをインストール
 2. `pnpm dev` を実行
 3. 表示される QR コードを Expo Go でスキャン
@@ -186,6 +241,39 @@ lsof -i :8787  # API
 # プロセスを停止してから再実行
 pnpm dev
 ```
+
+### 8787 の API が停止していない（Ctrl+D で終了した場合）
+
+`Ctrl+D` はシェルへの EOF 入力で、子プロセス（wrangler/workerd）に終了シグナルが届かず 8787 が残ることがあります。以下の方法で停止してください（Linux, bash）。
+
+方法 A: ポートを直接 kill（簡単）
+
+```bash
+# 8787/TCP を使用中のプロセスを強制終了
+fuser -k 8787/tcp || true
+
+# 代替: lsof がある場合
+kill -9 $(lsof -ti tcp:8787) 2>/dev/null || true
+```
+
+方法 B: Node ユーティリティで解放
+
+```bash
+# 一時実行（プロジェクトに依存を追加しません）
+pnpm dlx kill-port 8787
+```
+
+方法 C: プロセスを特定して終了
+
+```bash
+# プロセス特定
+ss -ltnp | grep :8787 || lsof -i :8787 -nP
+
+# PID を指定して終了（例: 12345）
+kill 12345 || kill -9 12345
+```
+
+予防策（設定済み）: 当リポジトリではルートの `package.json` に `predev` を設定済みです。`pnpm dev` の前に自動で 8787 を解放します。終了は `Ctrl+C` を推奨します（`Ctrl+D` は使用しない）。
 
 ### node_modules が見つからない
 

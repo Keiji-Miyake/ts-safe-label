@@ -8,7 +8,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "build": "expo export --output-dir dist"
+    "build": "expo export --output-dir dist",
+    "test": "vitest"
   },
   "dependencies": {
     "expo": "~54.0.20",
@@ -20,7 +21,13 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "@expo-workers/types": "workspace:*",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/dom": "^10.4.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "vitest": "~3.2.0",
+    "jsdom": "^25.0.1"
   },
   "private": true
 }
