@@ -1,7 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { api } from './lib/apiClient';
+import { BorderRadius, Colors, FontSizes, Spacing } from './lib/theme';
 
 export default function App() {
   const [message, setMessage] = useState<string>('');
@@ -9,7 +10,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   // API からデータを取得
-  const fetchGreeting = async () => {
+  const fetchGreeting = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -17,16 +18,19 @@ export default function App() {
       setMessage(data.message);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'エラーが発生しました');
-      console.error('API エラー:', err);
+      // 開発環境のみログ出力
+      if (__DEV__) {
+        console.error('API エラー:', err);
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // コンポーネントマウント時に API を呼び出し
   useEffect(() => {
     fetchGreeting();
-  }, []);
+  }, [fetchGreeting]);
 
   return (
     <View style={styles.container}>
@@ -36,7 +40,7 @@ export default function App() {
       <View style={styles.content}>
         {loading ? (
           <>
-            <ActivityIndicator size="large" color="#0066cc" />
+            <ActivityIndicator size="large" color={Colors.primary} />
             <Text style={styles.loadingText}>API から読み込み中...</Text>
           </>
         ) : error ? (
@@ -69,21 +73,21 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: Spacing.large,
   },
   title: {
-    fontSize: 28,
+    fontSize: FontSizes.xlarge,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    color: Colors.text.primary,
+    marginBottom: Spacing.xs,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
+    fontSize: FontSizes.medium,
+    color: Colors.text.secondary,
+    marginBottom: Spacing.xxxlarge,
   },
   content: {
     alignItems: 'center',
@@ -92,43 +96,43 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
+    marginTop: Spacing.medium,
+    fontSize: FontSizes.medium,
+    color: Colors.text.secondary,
   },
   message: {
-    fontSize: 18,
-    color: '#333',
-    marginBottom: 24,
+    fontSize: FontSizes.large,
+    color: Colors.text.primary,
+    marginBottom: Spacing.xlarge,
     textAlign: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.large,
   },
   errorText: {
-    fontSize: 16,
-    color: '#d32f2f',
-    marginBottom: 24,
+    fontSize: FontSizes.medium,
+    color: Colors.status.error,
+    marginBottom: Spacing.xlarge,
     textAlign: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: Spacing.large,
   },
   button: {
-    backgroundColor: '#0066cc',
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xxlarge,
+    paddingVertical: Spacing.medium - 4,
+    borderRadius: BorderRadius.medium,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
+    color: Colors.backgroundWhite,
+    fontSize: FontSizes.medium,
     fontWeight: '600',
   },
   info: {
     position: 'absolute',
-    bottom: 40,
+    bottom: Spacing.xxxlarge,
     alignItems: 'center',
   },
   infoText: {
-    fontSize: 12,
-    color: '#999',
-    marginVertical: 2,
+    fontSize: FontSizes.small,
+    color: Colors.text.tertiary,
+    marginVertical: Spacing.xs,
   },
 });

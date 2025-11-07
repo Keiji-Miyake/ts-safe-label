@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Expo + Cloudflare Workers 連携', () => {
   test('トップページが表示され、API から greeting を取得できる', async ({ page }) => {
@@ -9,7 +9,10 @@ test.describe('Expo + Cloudflare Workers 連携', () => {
     await expect(page.getByText(/Expo \+ Cloudflare Workers/i)).toBeVisible();
 
     // API からデータを取得するまで待機（最大10秒）
-    await expect(page.getByText(/Hello from Hono!/i)).toBeVisible({ timeout: 10000 });
+    // 実際の API レスポンス: "Hello from modern Hono & Cloudflare!"
+    await expect(page.getByText(/Hello from modern Hono & Cloudflare!/i)).toBeVisible({
+      timeout: 10000,
+    });
 
     // エラーが表示されていないことを確認
     await expect(page.getByText(/❌/)).not.toBeVisible();
@@ -17,7 +20,7 @@ test.describe('Expo + Cloudflare Workers 連携', () => {
 
   test('Retry ボタンが動作する（エラー時）', async ({ page }) => {
     // API をブロックしてエラー状態を作る
-    await page.route('**/api/greeting', route => route.abort());
+    await page.route('**/api/greeting', (route) => route.abort());
 
     await page.goto('/');
 
@@ -32,7 +35,9 @@ test.describe('Expo + Cloudflare Workers 連携', () => {
     await page.getByText(/再試行/i).click();
 
     // 成功メッセージを確認
-    await expect(page.getByText(/Hello from Hono!/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Hello from modern Hono & Cloudflare!/i)).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('API サーバー情報が表示される', async ({ page }) => {

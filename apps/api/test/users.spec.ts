@@ -1,5 +1,5 @@
-import { env, createExecutionContext, waitOnExecutionContext, SELF } from 'cloudflare:test';
-import { describe, it, expect } from 'vitest';
+import { SELF, createExecutionContext, env, waitOnExecutionContext } from 'cloudflare:test';
+import { describe, expect, it } from 'vitest';
 import worker from '../src/index';
 
 describe('API: users endpoints', () => {
@@ -9,10 +9,12 @@ describe('API: users endpoints', () => {
     const response = await worker.fetch(request, env, ctx);
     await waitOnExecutionContext(ctx);
     expect(response.status).toBe(200);
-  const json = await response.json() as any;
-    expect(json.success).toBe(true);
-    expect(Array.isArray(json.data)).toBe(true);
-    expect(typeof json.count).toBe('number');
+    const json: unknown = await response.json();
+    expect(json).toMatchObject({
+      success: true,
+      data: expect.any(Array),
+      count: expect.any(Number),
+    });
   });
 
   it('unit: GET /api/users/1 returns a user', async () => {
@@ -21,9 +23,15 @@ describe('API: users endpoints', () => {
     const response = await worker.fetch(request, env, ctx);
     await waitOnExecutionContext(ctx);
     expect(response.status).toBe(200);
-  const json = await response.json() as any;
-    expect(json.success).toBe(true);
-    expect(json.data).toHaveProperty('id', 1);
+    const json: unknown = await response.json();
+    expect(json).toMatchObject({
+      success: true,
+      data: {
+        id: 1,
+        name: expect.any(String),
+        email: expect.any(String),
+      },
+    });
   });
 
   it('unit: GET /api/users/999 returns 404', async () => {
@@ -32,14 +40,20 @@ describe('API: users endpoints', () => {
     const response = await worker.fetch(request, env, ctx);
     await waitOnExecutionContext(ctx);
     expect(response.status).toBe(404);
-  const json = await response.json() as any;
-    expect(json.success).toBe(false);
+    const json: unknown = await response.json();
+    expect(json).toMatchObject({
+      success: false,
+      error: expect.any(String),
+    });
   });
 
   it('integration: GET /api/users works', async () => {
     const response = await SELF.fetch('https://example.com/api/users');
     expect(response.status).toBe(200);
-  const json = await response.json() as any;
-    expect(json.success).toBe(true);
+    const json: unknown = await response.json();
+    expect(json).toMatchObject({
+      success: true,
+      data: expect.any(Array),
+    });
   });
 });

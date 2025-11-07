@@ -21,11 +21,13 @@
 ## 技術スタック
 
 ### API
+
 - **Cloudflare Workers**: エッジコンピューティング環境
 - **Hono**: 高速 Web フレームワーク
 - **Vitest**: ユニットテスト（6 tests）
 
 ### Client
+
 - **Expo ~54.0**: React Native 開発プラットフォーム
 - **React 19.1**: UI ライブラリ
 - **React Native 0.81**: モバイル UI
@@ -33,11 +35,14 @@
 - **Vitest**: ユニットテスト（4 tests）
 
 ### 共通
+
 - **pnpm workspace**: モノレポ管理
 - **packages/types**: 共有型定義（@expo-workers/types）
 - **Playwright**: E2E テスト（4 tests）
+- **Biome**: Linter & Formatter（高速な Rust 製ツール）
 
 ### CI/CD
+
 - **GitHub Actions**: 自動テスト（API + Client + E2E）
 - **Wrangler**: Cloudflare Workers デプロイ
 
@@ -83,6 +88,15 @@ pnpm test:e2e:ui           # UI モード
 pnpm test:e2e:debug        # デバッグモード
 ```
 
+### Lint & Format
+
+```bash
+# Biome を使用（ESLint + Prettier より高速）
+pnpm lint                  # チェックのみ
+pnpm lint:fix              # 自動修正
+pnpm format                # フォーマット
+```
+
 ### デプロイ
 
 ```bash
@@ -124,7 +138,7 @@ expo-workers-monorepo/
 
 ## 環境変数
 
-### Client (.env)
+### Client 環境変数 (.env)
 
 ```bash
 # apps/client/.env.example を参照
@@ -132,7 +146,7 @@ EXPO_PUBLIC_HONO_API_URL=http://localhost:8787  # 開発環境
 # EXPO_PUBLIC_HONO_API_URL=https://your-api.workers.dev  # 本番環境
 ```
 
-### API
+### API 環境変数
 
 Cloudflare Workers のシークレットは `wrangler secret put` で設定。
 

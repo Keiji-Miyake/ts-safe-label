@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 
 // API モックを設定
@@ -18,14 +18,12 @@ describe('App', () => {
 
   it('ローディング状態を表示する', async () => {
     // 永久に保留
-    vi.mocked(api.getGreeting).mockImplementation(
-      () => new Promise(() => {})
-    );
+    vi.mocked(api.getGreeting).mockImplementation(() => new Promise(() => {}));
 
     await act(async () => {
       render(<App />);
     });
-    
+
     expect(screen.getByText(/API から読み込み中/i)).toBeTruthy();
   });
 
@@ -44,9 +42,7 @@ describe('App', () => {
   });
 
   it('エラー時にエラーメッセージと再試行ボタンを表示する', async () => {
-    vi.mocked(api.getGreeting).mockRejectedValue(
-      new Error('Network error')
-    );
+    vi.mocked(api.getGreeting).mockRejectedValue(new Error('Network error'));
 
     await act(async () => {
       render(<App />);
@@ -66,7 +62,7 @@ describe('App', () => {
     await act(async () => {
       render(<App />);
     });
-    
+
     expect(screen.getByText(/Expo \+ Cloudflare Workers/i)).toBeTruthy();
   });
 });
