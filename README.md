@@ -1,5 +1,10 @@
 # ts-safe-label
 
+[![npm version](https://badge.fury.io/js/ts-safe-label.svg)](https://www.npmjs.com/package/ts-safe-label)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/ts-safe-label)](https://bundlephobia.com/package/ts-safe-label)
+
 TypeScriptの`enum`または`Union Type`定義から、UIで使用するための**型安全な選択肢リスト**を生成するユーティリティライブラリ。
 
 ## 特徴
