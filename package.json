@@ -1,40 +1,55 @@
 {
-  "name": "expo-workers-monorepo",
-  "version": "1.0.0",
-  "description": "⚡ Expo (React Native) + Cloudflare Workers (Hono) monorepo boilerplate with pnpm workspace",
-  "main": "index.js",
+  "name": "ts-safe-label",
+  "version": "0.1.0",
+  "description": "Type-safe label list generator for TypeScript enums and union types",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "predev": "pnpm dlx kill-port 8787 || true",
-    "dev": "pnpm --filter api dev & pnpm --filter client dev",
-    "dev:parallel": "pnpm --parallel --stream -r dev",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug"
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "lint": "biome lint src",
+    "format": "biome format --write src",
+    "check": "biome check --write src",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
-    "expo",
-    "react-native",
-    "cloudflare-workers",
-    "hono",
     "typescript",
-    "monorepo",
-    "pnpm-workspace",
-    "boilerplate",
-    "starter-template",
-    "fullstack"
+    "enum",
+    "union-type",
+    "type-safe",
+    "label",
+    "select",
+    "ui"
   ],
-  "author": "Keiji-Miyake",
+  "author": "Keiji Miyake",
   "license": "MIT",
-  "packageManager": "pnpm@10.20.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Keiji-Miyake/expo-workers-monorepo.git"
+    "url": "https://github.com/Keiji-Miyake/ts-safe-label.git"
+  },
+  "homepage": "https://github.com/Keiji-Miyake/ts-safe-label#readme",
+  "bugs": {
+    "url": "https://github.com/Keiji-Miyake/ts-safe-label/issues"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@playwright/test": "^1.56.1"
+    "@biomejs/biome": "^2.3.4",
+    "@types/node": "^20.10.0",
+    "@vitest/ui": "^1.0.4",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.2",
+    "vitest": "^1.0.4"
   }
 }

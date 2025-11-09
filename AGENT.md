@@ -1,186 +1,188 @@
-# AI エージェント設定
-
-このファイルは、AI エージェントがプロジェクトを理解するための設定ファイルです。
-
-## 出力言語設定
-
-**重要**: すべてのファイル作成・編集時、コミットメッセージは**日本語**で出力してください。
-
-- コード内のコメント: 日本語
-- 変数名・関数名: 英語（慣例に従う）
-- ドキュメント: 日本語
-- コミットメッセージ: 日本語
-- このプロジェクトは日本語を標準言語として使用します
+# 🚀 ts-safe-label 開発指示書
 
 ## プロジェクト概要
 
-**expo-workers-monorepo**: Expo (React Native) + Cloudflare Workers (Hono) のマルチプラットフォームアプリ開発ボイラープレート。
+TypeScriptの`enum`または`Union Type`定義から、UIで使用するための**型安全な選択肢リスト（`value`/`label`形式）**を生成するユーティリティライブラリ。
 
-このプロジェクトは、モバイル（iOS/Android）、Web、API を同一リポジトリで開発できる、すぐに使えるスターターテンプレートです。
+開発者はキーの存在を気にすることなく、UI側で利用できる型安全な選択肢リストをすぐに取得できる。
 
-## 技術スタック
+## 目的
 
-### API
+- UIコンポーネント（select、radio、checkboxなど）で使用する選択肢リストの生成を自動化
+- TypeScriptの型システムを活用し、コンパイル時にキーの存在チェックを実現
+- 存在しないキーを渡そうとした場合、TypeScriptがコンパイルエラーを出力
+- 型安全性を保ちながら、開発体験を向上
 
-- **Cloudflare Workers**: エッジコンピューティング環境
-- **Hono**: 高速 Web フレームワーク
-- **Vitest**: ユニットテスト（6 tests）
+## 開発環境
 
-### Client
+| 項目 | 技術選定 | 理由 |
+|------|----------|------|
+| **言語** | TypeScript (Strict Mode) | 完全な型安全性を実現 |
+| **パッケージマネージャー** | npm / yarn / pnpm | 任意 |
+| **テストフレームワーク** | Vitest | 高速で現代的なテスト体験 |
+| **リンター/フォーマッター** | Biome | ESLintより高速、設定も簡単 |
+| **ビルドツール** | tsup | 簡単にCJS/ESM/型定義を生成 |
 
-- **Expo ~54.0**: React Native 開発プラットフォーム
-- **React 19.1**: UI ライブラリ
-- **React Native 0.81**: モバイル UI
-- **TypeScript ~5.9**: 型安全
-- **Vitest**: ユニットテスト（4 tests）
+## 必須機能要件
 
-### 共通
+### 1. `createLabelList` 関数（メイン機能）
 
-- **pnpm workspace**: モノレポ管理
-- **packages/types**: 共有型定義（@expo-workers/types）
-- **Playwright**: E2E テスト（4 tests）
-- **Biome**: Linter & Formatter（高速な Rust 製ツール）
+#### 入力
+- 元となる`enum`または`Union Type`を表現するオブジェクト
+  - 例：`{ RED: 'red', BLUE: 'blue' }`
+- ラベルの変換を行う関数またはマッピングオブジェクト
+  - 例：`{ RED: '赤', BLUE: '青' }`
 
-### CI/CD
+#### 出力
+- `Array<{ value: TValue, label: string }>` 形式の配列
 
-- **GitHub Actions**: 自動テスト（API + Client + E2E）
-- **Wrangler**: Cloudflare Workers デプロイ
+#### 型安全性
+- `value`フィールドは、元の`enum`のキーまたは値の**Union Type**で厳密に型付け
+- ユーザーが用意したラベル変換オブジェクトが存在しないキーを渡そうとした場合、TypeScriptがコンパイル時にエラーを出力
+- 部分的なラベルマップも許容（`Partial<LabelMap<TEnum>>`）
 
-## クイックスタート
+### 2. キーと値の扱い（基本設計）
 
+#### デフォルト動作
+- `enum`の**キー（`'RED'`）を`value`**として扱う
+- 出力例：`[{ value: 'RED', label: '赤' }, ...]`
+
+#### オプション動作
+- `useEnumValues: true` オプションで、`enum`の**値（`'red'`）を`value`**として扱える
+- 出力例：`[{ value: 'red', label: '赤' }, ...]`
+
+### 3. 型定義のエクスポート
+
+以下の型をエクスポートし、ユーザーが外部で型を再利用できるようにする：
+
+- `SafeLabel<TValue>` - 生成されるリストの型
+- `LabelMap<TEnum>` - 完全なラベルマップの型
+- `PartialLabelMap<TEnum>` - 部分的なラベルマップの型
+- `KeysOf<T>` - オブジェクトのキーを抽出する型
+- `ValuesOf<T>` - オブジェクトの値を抽出する型
+- `CreateLabelListOptions` - オプションの型
+
+## 開発プロセス（TDD推奨）
+
+### Step 1: 初期設定とテストファイル作成
+
+#### 必要なパッケージのインストール
 ```bash
-# 1. 依存関係をインストール
-pnpm install
-
-# 2. 開発サーバー起動（ワンライナー）
-pnpm dev
-# → API: http://localhost:8787
-# → Client: http://localhost:8081
-
-# 3. Web ブラウザで開く
-# Expo のターミナルで 'w' キーを押す
+npm install -D typescript vitest @biomejs/biome tsup
 ```
 
-## 開発コマンド
+#### 設定ファイルの作成
+- `package.json` - スクリプトとメタデータ
+- `tsconfig.json` - TypeScript Strict Mode設定
+- `vitest.config.ts` - Vitestの設定
+- `biome.json` - Biomeのリント・フォーマット設定
 
-### 基本
+### Step 2: 主要な型定義とテストの記述（優先）
 
-```bash
-# 開発サーバー起動（推奨）
-pnpm dev          # API + Client を同時起動（predev で 8787 自動解放）
+#### 型定義の作成
+1. `Union Type`を表現するオブジェクトから、そのキーのUnion Typeを抽出するユーティリティ型を定義
+2. `createLabelList`の基本的なシグネチャ（関数定義）を作成
+3. 関数オーバーロードで、`useEnumValues`オプションによる戻り値の型を適切に変更
 
-# 個別起動
-pnpm --filter api dev      # API のみ
-pnpm --filter client dev   # Client のみ
-pnpm --filter client web   # Client Web のみ
-```
+#### テストケースの作成
+- **厳密な型チェックが機能しているか**を確認する最初のテストケース
+- 完全なラベルマップを提供した場合のテスト
+- 部分的なラベルマップを提供した場合のテスト
+- ラベルマップを省略した場合のテスト
+- `useEnumValues: true` を使用した場合のテスト
+- 数値enumでの動作テスト
+- エッジケース（空のオブジェクト、単一キーなど）
+
+### Step 3: 関数の実装とリファクタリング
+
+#### 実装のポイント
+- Step 2のテストをパスするように`createLabelList`を実装
+- `Object.keys()`を使用してenumのキーを取得
+- オプションに応じてキーまたは値を`value`として使用
+- ラベルが提供されていない場合はキー名をラベルとして使用（デフォルト動作）
+
+#### エラーハンドリング
+- ラベル変換関数が提供されない場合のデフォルト動作
+  - キーをそのままラベルにする
+- 空のオブジェクトの場合は空の配列を返す
+
+### Step 4: ドキュメントと使用例の作成
+
+#### README.md
+- ライブラリの目的と特徴
+- インストール方法
+- 基本的な使い方（複数のパターン）
+- API仕様
+- Reactなどでの使用例
+
+#### examples/usage.ts
+- 実際に動作する使用例のコレクション
+- 様々なユースケースのデモ
+
+## 設計思想
+
+### 型安全性の重視
+- TypeScriptの型システムを最大限活用
+- コンパイル時のエラー検出
+- IDEの自動補完サポート
+
+### 開発者体験の向上
+- シンプルで直感的なAPI
+- 柔軟なオプション設計
+- 充実したドキュメント
+
+### テスト駆動開発
+- テストファーストで品質を担保
+- 包括的なテストカバレッジ
+- リファクタリングの安全性確保
+
+## 期待される成果物
+
+### コア機能
+✅ `createLabelList` 関数の実装  
+✅ 完全な型定義とエクスポート  
+✅ 関数オーバーロードによる柔軟な型推論  
 
 ### テスト
+✅ 13個のテストケース、すべてパス  
+✅ 型チェックの検証  
+✅ エッジケースのカバレッジ  
 
+### ドキュメント
+✅ 詳細なREADME  
+✅ 実行可能な使用例  
+✅ JSDocコメント  
+
+### ビルド
+✅ CommonJS/ESM対応  
+✅ 型定義ファイル（.d.ts）生成  
+✅ パッケージとして公開可能な形式  
+
+## 実装結果の確認
+
+### テスト実行
 ```bash
-# ユニットテスト
-pnpm --filter api test     # API（Vitest）
-pnpm --filter client test  # Client（Vitest + React Testing Library）
-
-# E2E テスト
-pnpm test:e2e              # Playwright（Web 版統合テスト）
-pnpm test:e2e:ui           # UI モード
-pnpm test:e2e:debug        # デバッグモード
+npm test
 ```
 
-### Lint & Format
-
+### 型チェック
 ```bash
-# Biome を使用（ESLint + Prettier より高速）
-pnpm lint                  # チェックのみ
-pnpm lint:fix              # 自動修正
-pnpm format                # フォーマット
+npm run typecheck
 ```
 
-### デプロイ
-
+### ビルド
 ```bash
-# Cloudflare Workers にデプロイ
-pnpm --filter api deploy
-
-# 詳細は DEPLOY.md を参照
+npm run build
 ```
 
-## ディレクトリ構造
-
-```txt
-expo-workers-monorepo/
-├── apps/
-│   ├── api/                    # Cloudflare Workers API
-│   │   ├── src/
-│   │   │   └── index.ts        # API エントリーポイント（Hono）
-│   │   ├── test/               # Vitest テスト
-│   │   └── wrangler.jsonc      # Workers 設定
-│   └── client/                 # Expo アプリ
-│       ├── lib/
-│       │   └── apiClient.ts    # API クライアントヘルパー
-│       ├── __tests__/          # Vitest テスト
-│       ├── App.tsx             # メインコンポーネント
-│       └── vitest.config.ts    # テスト設定
-├── packages/
-│   └── types/                  # 共有型定義
-│       └── src/
-│           └── index.ts        # User, ApiResponse など
-├── e2e/                        # Playwright E2E テスト
-│   └── app.spec.ts
-├── .github/workflows/
-│   ├── ci.yml                  # CI（テスト自動実行）
-│   └── deploy.yml              # CD（自動デプロイ）
-├── README.md                   # プロジェクトガイド
-├── DEPLOY.md                   # デプロイ手順
-└── TODO.md                     # タスク管理
-```
-
-## 環境変数
-
-### Client 環境変数 (.env)
-
+### リント・フォーマット
 ```bash
-# apps/client/.env.example を参照
-EXPO_PUBLIC_HONO_API_URL=http://localhost:8787  # 開発環境
-# EXPO_PUBLIC_HONO_API_URL=https://your-api.workers.dev  # 本番環境
+npm run check
 ```
 
-### API 環境変数
+すべてが成功すれば、プロジェクトは完成です！
 
-Cloudflare Workers のシークレットは `wrangler secret put` で設定。
+---
 
-## 重要な注意事項
-
-1. **開発環境**: Linux (bash)、Android SDK なし → Web モード推奨
-2. **起動**: `pnpm dev` で API (8787) と Client (8081) が同時起動
-3. **対話メニュー**: Expo の対話キー（w, a, i, r など）が使用可能
-4. **API 連携**: `apps/client/lib/apiClient.ts` を通じて API にアクセス
-5. **型共有**: `@expo-workers/types` で API と Client の型を共有
-6. **ポート管理**: predev スクリプトで 8787 を自動解放（Ctrl+C で終了推奨）
-
-## API エンドポイント
-
-現在実装されているエンドポイント：
-
-- `GET /`: API 情報
-- `GET /api/greeting`: サンプル greeting
-- `GET /api/users`: ユーザー一覧
-- `GET /api/users/:id`: ユーザー詳細
-- `POST /api/users`: ユーザー作成
-- `GET /health`: ヘルスチェック
-
-## テスト戦略
-
-- **ユニットテスト**: API と Client のコンポーネント・ロジックを個別テスト（Vitest）
-- **E2E テスト**: Web 版の完全なユーザーフローをテスト（Playwright）
-- **CI**: GitHub Actions で全テストを自動実行
-
-## 次のステップ
-
-1. **API 開発**: `apps/api/src/index.ts` に新しいエンドポイントを追加
-2. **Client 開発**: `apps/client/App.tsx` で UI を実装
-3. **型共有**: `packages/types/src/index.ts` に共通型を追加
-4. **テスト**: `__tests__/` にユニットテスト、`e2e/` に E2E テストを追加
-5. **デプロイ**: GitHub Secrets を設定して自動デプロイを有効化（DEPLOY.md 参照）
-
+**このドキュメントは、AI（GitHub Copilot）に対する開発指示として作成されました。**
+**型安全性を重視し、テスト駆動で開発を進めることで、堅牢で実用的なライブラリが短時間で実現できました。**
